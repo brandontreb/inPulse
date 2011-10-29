@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.brandontreb.InPulseDaemon.plist</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Applications/InPulseDaemon.app/InPulseDaemon</string>
+		<string></string>
+		<string></string>
+	</array>
+	<key>OnDemand</key>
+	<false/>
+	<key>StandardErrorPath</key>
+	<string>/dev/null</string>
+	<key>Disabled</key>
+	<false/>
+</dict>
+</plist>
