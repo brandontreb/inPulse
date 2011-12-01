@@ -31,24 +31,23 @@
 }
 
 - (void)startServer {
+	printf("Starting server...\n");
 	if(!self.isRunning) {
 		int port = kPort;
 
 		NSError *error = nil;
 		if(![self.listenSocket acceptOnPort:port error:&error]) {
-			NSLog(@"Error starting server %@",error);
+			printf("Error starting server");
 			return;
+		} else {
+			printf("Listening on port %i\n",port);
 		}
 		
 		self.isRunning = YES;
-		
-		dispatch_async(dispatch_get_main_queue(), ^{
-			UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Started!" message:@"Server Started :)" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil] autorelease];
-		    [alert show];
-		});
-		
 	}
 }
+
+#pragma mark - GCDAsyncSocket Delegate methods
 
 - (void)socket:(GCDAsyncSocket *)sock didAcceptNewSocket:(GCDAsyncSocket *)newSocket {
 	// This method is executed on the socketQueue (not the main thread)
@@ -57,8 +56,53 @@
 		[self.connectedSockets addObject:newSocket];
 	}
 	
-	UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Connected!" message:@"Client Connected :)" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil] autorelease];
-    [alert show];
+	printf("Client connected...\n");
+	
+	[newSocket readDataToData:[GCDAsyncSocket CRLFData] withTimeout:kReadTimeout tag:0];
+}
+
+- (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
+{	
+	
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+		
+		NSData *strData = [data subdataWithRange:NSMakeRange(0, [data length] - 2)];
+		NSString *msg = [[[NSString alloc] initWithData:strData encoding:NSUTF8StringEncoding] autorelease];
+		if (msg)
+		{
+			printf("Received: %s\n",[msg UTF8String]);
+		}
+		else
+		{
+			printf("Error receiving data...\n");
+		}
+		
+		[pool release];
+	});
+	
+	// Echo message back to client
+	//[sock writeData:data withTimeout:-1 tag:ECHO_MSG];
+}
+
+
+- (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
+{
+	if (sock != self.listenSocket)
+	{
+		dispatch_async(dispatch_get_main_queue(), ^{
+			NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+			
+			printf("Client Disconnected");
+			
+			[pool release];
+		});
+		
+		@synchronized(self.connectedSockets)
+		{
+			[self.connectedSockets removeObject:sock];
+		}
+	}
 }
 
 @end

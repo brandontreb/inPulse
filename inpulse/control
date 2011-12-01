@@ -1,0 +1,9 @@
+Package: com.brandontreb.inpulse
+Name: inPulse
+Depends: 
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome application!
+Maintainer: Brandon Trebitowski
+Author: Brandon Trebitowski
+Section: Utilities

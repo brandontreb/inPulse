@@ -8,6 +8,9 @@ int main(int argc, char **argv, char **envp) {
 	InPulseDaemonDelegate *delegate = [[InPulseDaemonDelegate alloc] init];
 	[delegate startServer];
 	
+	//Block
+	while(1){}
+	
 	[pool release];
 	
 	return 0;
