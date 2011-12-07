@@ -3,6 +3,7 @@
 @interface inPulseApplication: UIApplication <UIApplicationDelegate> {
 	UIWindow *_window;
 	RootViewController *_viewController;
+	UINavigationController *_navController;
 }
 @property (nonatomic, retain) UIWindow *window;
 @end
@@ -12,7 +13,10 @@
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 	_window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	_viewController = [[RootViewController alloc] init];
-	[_window addSubview:_viewController.view];
+	
+	_navController = [[UINavigationController alloc] initWithRootViewController:_viewController];
+	
+	[_window addSubview:_navController.view];
 	[_window makeKeyAndVisible];
 }
 

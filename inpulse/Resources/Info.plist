@@ -10,7 +10,7 @@
     );
     CFBundleVersion = 1.0;
     DTPlatformName = iphoneos;
-    DTSDKName = iphoneos3.0;
+    DTSDKName = iphoneos5.0;
     LSRequiresIPhoneOS = 1;
-    MinimumOSVersion = 3.0;
+    MinimumOSVersion = 5.0;
 }

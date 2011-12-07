@@ -4,3 +4,6 @@ inpulsedaemon/theos
 inpulsedaemon/.theos
 inpulsedaemon/obj
 notes.md
+*.deb
+*_*
+*theos*
