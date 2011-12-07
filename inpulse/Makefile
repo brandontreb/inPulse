@@ -1,7 +1,7 @@
 include theos/makefiles/common.mk
 
 APPLICATION_NAME = inPulse
-inPulse_FILES = main.m inPulseApplication.mm RootViewController.mm INPreferenceManager.m BTDevice.m BTstackManager.m TroubleshootingViewController.m INAlertData.m SVProgressHUD.m
+inPulse_FILES = main.m inPulseApplication.mm RootViewController.mm INPreferenceManager.m BTDevice.m BTstackManager.m TroubleshootingViewController.m INAlertData.m SVProgressHUD.m NotificationSettingsViewController.m
 
 inPulse_CFLAGS = -Iinclude
 inPulse_LDFLAGS = -lBTstack

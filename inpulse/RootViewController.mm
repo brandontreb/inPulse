@@ -1,6 +1,7 @@
 #import "RootViewController.h"
 #import "INPreferenceManager.h"
 #import "TroubleshootingViewController.h"
+#import "NotificationSettingsViewController.h"
 #import "SVProgressHUD.h"
 
 #import <BTstack/BTDiscoveryViewController.h>
@@ -45,8 +46,14 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
 	self.bt = [BTstackManager sharedInstance];
 	[self.bt setDelegate:self];
 	[self.bt addListener:self];
-	
-	self.title = @"inPulse";
+
+    UIBarButtonItem *connect = [[[UIBarButtonItem alloc] initWithTitle:@"Connect" 
+                                                                 style:UIBarButtonItemStylePlain 
+                                                                target:self 
+                                                                action:@selector(connect:)] autorelease];
+    self.navigationItem.rightBarButtonItem = connect;
+
+    self.title = @"inPulse";
 }
 
 #pragma mark - UITableView Datasource
@@ -116,7 +123,7 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
 			
 			if(source_cid) {						
 				TroubleshootingViewController *controller = [[TroubleshootingViewController alloc] initWithSourceCID:source_cid];
-																								[self.navigationController pushViewController:controller animated:YES];
+				[self.navigationController pushViewController:controller animated:YES];
 				[controller release];
 			} else {
 				self.state = kStateTroubleshootingTappedWhileDisconnected;
@@ -124,6 +131,11 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
 			}
 			break;
 		}
+        case kRowNotificationSettings:
+            NotificationSettingsViewController * controller = [[NotificationSettingsViewController alloc] init];
+            [self.navigationController pushViewController:controller animated:YES];
+            [controller release];
+            break;
     }
 
 	[[tableView cellForRowAtIndexPath:indexPath] setSelected:NO animated:YES];
@@ -149,31 +161,6 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
     label.shadowColor = [UIColor darkGrayColor];
     [view addSubview:label];
     return view;
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
-    return 66.0;
-}
-
-- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section { 
-	UIView *view =  [[[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 66)] autorelease];
-	UIButton *connectButton = [UIButton buttonWithType:UIButtonTypeCustom];
-	[connectButton setFrame:CGRectMake(0,5,155,44)];
-	[connectButton addTarget:self action:@selector(connect:) forControlEvents:UIControlEventTouchUpInside];
-	[connectButton setBackgroundColor:[UIColor colorWithRed:.9 green:.9 blue:.9 alpha:1.0]];
-	[connectButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
-	[connectButton setTitle:@"Connect to Watch" forState:UIControlStateNormal];
-	[view addSubview:connectButton];
-	
-	UIButton *disconnectButton = [UIButton buttonWithType:UIButtonTypeCustom];
-	[disconnectButton setFrame:CGRectMake(165,5,155,44)];
-	[disconnectButton addTarget:self action:@selector(disconnect:) forControlEvents:UIControlEventTouchUpInside];
-	[disconnectButton setBackgroundColor:[UIColor colorWithRed:.9 green:.9 blue:.9 alpha:1.0]];
-	[disconnectButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
-	[disconnectButton setTitle:@"Disconnect" forState:UIControlStateNormal];
-	[view addSubview:disconnectButton];
-	
-	return view;
 }
 
 #pragma mark - Actions
@@ -316,6 +303,7 @@ static int attempts = 0;
 					// Confirms event
 					if(self.state == kStateSettingTime) {
 						[SVProgressHUD dismissWithSuccess:@"Time Synchronized."];
+                        self.state = kStateIdle;
 						break;
 					}
 					break; 
