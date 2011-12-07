@@ -7,3 +7,4 @@ notes.md
 *.deb
 *_*
 *theos*
+*obj
