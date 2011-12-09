@@ -58,31 +58,33 @@
 	
 	printf("Client connected...\n");
 	
+    NSString *welcomeMsg = @"Welcome to the AsyncSocket Echo Server\r\n";
+	NSData *welcomeData = [welcomeMsg dataUsingEncoding:NSUTF8StringEncoding];
+	[newSocket writeData:welcomeData withTimeout:-1 tag:1];
+
 	[newSocket readDataToData:[GCDAsyncSocket CRLFData] withTimeout:kReadTimeout tag:0];
+
+}
+
+- (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag
+{
+    [sock readDataToData:[GCDAsyncSocket CRLFData] withTimeout:kReadTimeout tag:0];
+    
 }
 
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
 {	
-	
-	dispatch_async(dispatch_get_main_queue(), ^{
-		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-		
-		NSData *strData = [data subdataWithRange:NSMakeRange(0, [data length] - 2)];
-		NSString *msg = [[[NSString alloc] initWithData:strData encoding:NSUTF8StringEncoding] autorelease];
-		if (msg)
-		{
-			printf("Received: %s\n",[msg UTF8String]);
-		}
-		else
-		{
-			printf("Error receiving data...\n");
-		}
-		
-		[pool release];
-	});
-	
-	// Echo message back to client
-	//[sock writeData:data withTimeout:-1 tag:ECHO_MSG];
+
+    NSData *strData = [data subdataWithRange:NSMakeRange(0, [data length] - 2)];
+    NSString *msg = [[[NSString alloc] initWithData:strData encoding:NSUTF8StringEncoding] autorelease];
+    if (msg)
+    {
+        printf("Received: %s\n",[msg UTF8String]);
+    }
+    else
+    {
+        printf("Error receiving data...\n");
+    }
 }
 
 
