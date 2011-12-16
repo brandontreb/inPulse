@@ -1,44 +1,100 @@
-//#import <SpringBoard/SpringBoard.h>
+#import <SpringBoard/SpringBoard.h>
+#import <BulletinBoard/BBBulletin.h>
+#import "PulseMessage.h"
+#import "PulseMessageManager.h"
+
+NSString *seenBulletinID;
+PulseMessageManager *manager;
 
 %hook SpringBoard
 
 -(void)applicationDidFinishLaunching:(id)notification{ 
     %orig;
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Welcome" 
+        message:@"Welcome to your iPhone Brandon!" 
+        delegate:nil 
+        cancelButtonTitle:@"Thanks" 
+        otherButtonTitles:nil];
+    [alert show];
+    [alert release];
+
+    manager = [[PulseMessageManager alloc] init];
 }
 
 %end;
 
-/* How to Hook with Logos
-Hooks are written with syntax similar to that of an Objective-C @implementation.
-You don't need to #include <substrate.h>, it will be done automatically, as will
-the generation of a class list and an automatic constructor.
-
-%hook ClassName
-
-// Hooking a class method
-+ (id)sharedInstance {
-	return %orig;
+static PulseMessage* managerMessageFromBulletin(BBBulletin * bulletin){
+	if (seenBulletinID){
+		[seenBulletinID release];
+	}
+	seenBulletinID=[bulletin bulletinID];
+	[seenBulletinID retain];
+	PulseMessage *message = [[PulseMessage alloc] init] ;
+	message.title = [[bulletin content] title];
+	message.message = [[bulletin content] message] ;
+	if ([[bulletin sectionID] isEqual:@"com.apple.MobileSMS"]){
+		message.messageType=kMessageSMS;
+	}	
+	else if ([[bulletin sectionID] isEqual:@"com.apple.mobilephone"]){
+		message.messageType=kMessagePhone;
+	}	
+	else if ([[bulletin sectionID] isEqual:@"com.apple.mobilecal"]){
+		message.messageType=kMessageCalendar;
+	}
+	else{
+		message.messageType=kMessageEmail;
+	}
+	return message;
 }
 
-// Hooking an instance method with an argument.
-- (void)messageName:(int)argument {
-	%log; // Write a message about this call, including its class, name and arguments, to the system log.
 
-	%orig; // Call through to the original function with its original arguments.
-	%orig(nil); // Call through to the original function with a custom argument.
-
-	// If you use %orig(), you MUST supply all arguments (except for self and _cmd, the automatically generated ones.)
+%group iOS5Hooks
+%hook SBBulletinBannerController
+-(void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned)feed{
+	if (![seenBulletinID isEqual:[bulletin bulletinID]]){
+		PulseMessage *message = [managerMessageFromBulletin(bulletin) autorelease];
+		[manager newMessageWithMessage:message];
+	}
+	%orig;
 }
-
-// Hooking an instance method with no arguments.
-- (id)noArguments {
-	%log;
-	id awesome = %orig;
-	[awesome doSomethingElse];
-
-	return awesome;
-}
-
-// Always make sure you clean up after yourself; Not doing so could have grave consequences!
 %end
-*/
+%hook SBBulletinModalController
+-(void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned)feed{
+	if (![seenBulletinID isEqual:[bulletin bulletinID]]){
+		PulseMessage *message = [managerMessageFromBulletin(bulletin) autorelease];
+		[manager newMessageWithMessage:message]; 
+	}
+	%orig;
+}
+%end
+%hook SBAwayBulletinListController
+-(void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned)feed{
+	if (![seenBulletinID isEqual:[bulletin bulletinID]]){
+		PulseMessage *message = [managerMessageFromBulletin(bulletin) autorelease];
+		[manager newMessageWithMessage:message];
+	}
+	%orig;
+}
+%end
+%hook SBAlertItemsController
+-(void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned)feed{
+	if (![seenBulletinID isEqual:[bulletin bulletinID]]){
+		PulseMessage *message = [managerMessageFromBulletin(bulletin) autorelease];
+		[manager newMessageWithMessage:message];
+	}
+	%orig;
+}
+%end
+%end
+//iOS5 GROUPS END
+
+%ctor
+{
+	%init; // init all hooks outside groups
+	
+    %init(iOS5Hooks);
+	//Register for the preferences-did-change notification
+//	CFNotificationCenterRef r = CFNotificationCenterGetDarwinNotifyCenter();
+//	CFNotificationCenterAddObserver(r, NULL, &reloadPrefsNotification, CFSTR("com.brandontreb.inpulsenotifier/reloadPrefs"), NULL, 0);
+}
+

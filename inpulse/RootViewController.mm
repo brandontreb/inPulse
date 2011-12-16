@@ -270,14 +270,16 @@ static int attempts = 0;
 		case L2CAP_DATA_PACKET:			
 			break;			
 		case HCI_EVENT_PACKET:
-
+		{
 			switch (packet[0]){
-				case L2CAP_EVENT_CHANNEL_OPENED:
+				case L2CAP_EVENT_CHANNEL_OPENED: 
+				{
 					// inform about new l2cap connection
 					bt_flip_addr(event_addr, &packet[3]);
 					//uint16_t psm = READ_BT_16(packet, 11); 
 					source_cid = READ_BT_16(packet, 13); 
 					con_handle = READ_BT_16(packet, 9);
+					
 					if (packet[2] == 0) {							
 						[SVProgressHUD dismissWithSuccess:@"Connection established."];
 						
@@ -296,10 +298,12 @@ static int attempts = 0;
 						[SVProgressHUD dismissWithError:@"Connection failure."];
 					}
 					break;
+				}	
 				case L2CAP_EVENT_CHANNEL_CLOSED:
 					// TODO: Disconnect Notice
 					break;
 				case L2CAP_EVENT_CREDITS:
+				{												
 					// Confirms event
 					if(self.state == kStateSettingTime) {
 						[SVProgressHUD dismissWithSuccess:@"Time Synchronized."];
@@ -307,11 +311,21 @@ static int attempts = 0;
 						break;
 					}
 					break; 
-				default: 					
+				}
+				case L2CAP_EVENT_TIMEOUT_CHECK: 
+				{
+					// heartbeat
+					source_cid = READ_BT_16(packet, 13); 
+					con_handle = READ_BT_16(packet, 9);
 					break;
+				}
+				default: {
+						
+					break;
+				}
 			}
 			break;
-			
+		}
 		default:
 			break;
 	}	

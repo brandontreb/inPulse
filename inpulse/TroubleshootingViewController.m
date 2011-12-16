@@ -1,11 +1,11 @@
 #import "TroubleshootingViewController.h"
-#import "INAlertData.h"
+#import "PulseMessage.h"
 #import "SVProgressHUD.h"
 #import "config.h"
 
 @interface TroubleshootingViewController(Private)
-- (void)sendTestMessageOfType:(kPulseAlert) type title:(NSString *) title message:(NSString *) message;
-- (void)newAlertWithData:(INAlertData *)data;
+- (void)sendTestMessageOfType:(PulseMessageType) type title:(NSString *) title message:(NSString *) message;
+- (void)newAlertWithData:(PulseMessage *)data;
 @end
 
 int store_inpulse_string(char *dest, const char *string){
@@ -105,25 +105,25 @@ int store_inpulse_string(char *dest, const char *string){
 		case kTestRowEmail: {	
 			NSString *title = @"brandontreb";
 			NSString *message = @"Hey there,\n\nThanks for checking out the inPulse app for iOS.\n-Brandon";
-			[self sendTestMessageOfType:kAlertEmail title:title message:message];			
+			[self sendTestMessageOfType:kMessageEmail title:title message:message];			
 			break;
 		}
 		case kTestRowSMS: {	
 			NSString *title = @"Eddard Stark";
 			NSString *message = @"Winter is coming!";
-			[self sendTestMessageOfType:kAlertSMS title:title message:message];			
+			[self sendTestMessageOfType:kMessageSMS title:title message:message];			
 			break;
 		}
 		case kTestRowCalendar: {	
 			NSString *title = @"Conf Room B";
 			NSString *message = @"Meeting with the Bobs";
-			[self sendTestMessageOfType:kAlertCalendar title:title message:message];
+			[self sendTestMessageOfType:kMessageCalendar title:title message:message];
 			break;
 		}
 		case kTestRowPhone: {	
 			NSString *title = @"Mom";
 			NSString *message = @"867-5309";
-			[self sendTestMessageOfType:kAlertPhone title:title message:message];			
+			[self sendTestMessageOfType:kMessagePhone title:title message:message];			
 			break;
 		}
     }
@@ -175,31 +175,28 @@ int store_inpulse_string(char *dest, const char *string){
 
 #pragma mark - Actions
 
-- (void) sendTestMessageOfType:(kPulseAlert) type title:(NSString *) title message:(NSString *) message {
-	INAlertData *data = [[[INAlertData alloc] init] autorelease];
-    data.time = [NSDate date];
-	data.status = kNewAlertForeground;
-    data.type = type;
-    data.bundleID = @"com.apple.iphone";
-	data.header = title;
-	data.text = message;
+- (void) sendTestMessageOfType:(PulseMessageType) type title:(NSString *) title message:(NSString *) message {
+	PulseMessage *data = [[[PulseMessage alloc] init] autorelease];
+    data.messageType = type;
+	data.title = title;
+	data.message = message;
 	[self newAlertWithData:data];
 }
 
--(void)newAlertWithData:(INAlertData *)data {	
+-(void)newAlertWithData:(PulseMessage *)data {	
 	uint8_t buffer[256];
 	notification_message_header * message = (notification_message_header*) &buffer;
 	message->m_header.endpoint = PP_ENDPOINT_NOTIFICATION;
 	message->m_header.header_length = 8;
 	message->m_header.time = time(NULL);
-	message->notification_type = data.type;
+	message->notification_type = data.messageType;
 	message->pp_alert_configuration.on1 = 10;
 	message->pp_alert_configuration.type = 1;
 	int pos = sizeof(notification_message_header);
 	int len;
 
-	const char *sndr = [[data header] UTF8String];
-	const char *msg = [[data text] UTF8String];
+	const char *sndr = [[data title] UTF8String];
+	const char *msg = [[data message] UTF8String];
 	len = store_inpulse_string((char*)&buffer[pos], sndr); pos += len;
 	len = store_inpulse_string((char*)&buffer[pos], msg);
 	pos += len;
