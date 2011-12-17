@@ -23,11 +23,13 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
 @synthesize preferenceManager = _preferenceManager;
 @synthesize bt = _bt;
 @synthesize state = _state;
+@synthesize timeoutTimer = _timeoutTimer;
 
 - (void) dealloc {
 	[_tableview release]; 
 	[_preferenceManager release];
 	[_bt release];
+	[_timeoutTimer release];
 	[super dealloc];
 }
 
@@ -52,6 +54,12 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
                                                                 target:self 
                                                                 action:@selector(connect:)] autorelease];
     self.navigationItem.rightBarButtonItem = connect;
+
+	UIBarButtonItem *disconnect = [[[UIBarButtonItem alloc] initWithTitle:@"Disconnect" 
+                                                                 style:UIBarButtonItemStylePlain 
+                                                                target:self 
+                                                                action:@selector(disconnect:)] autorelease];
+    self.navigationItem.leftBarButtonItem = disconnect;
 
     self.title = @"inPulse";
 }
@@ -169,10 +177,16 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
 	BTstackError err = [self.bt activate];
 	if (err) NSLog(@"activate err 0x%02x!", err);
 	[SVProgressHUD showWithStatus:@"Connecting to inPulse..." maskType:SVProgressHUDMaskTypeClear];
+	self.timeoutTimer = [NSTimer timerWithTimeInterval:30 
+												target:self 
+											  selector:@selector(timeout:) 
+											  userInfo:nil 
+											   repeats:NO];
 }
 
 - (void) disconnect:(id) sender {
-	bt_send_cmd(&l2cap_disconnect, addr,0x1001);
+	bt_send_cmd(&l2cap_disconnect,source_cid,0x1001);
+	[SVProgressHUD showWithStatus:@"Disconnecting from inPulse..." maskType:SVProgressHUDMaskTypeClear];
 }
 
 - (void) setTime {
@@ -208,6 +222,11 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
 	timecmd.cmd.parameter2 = +1;
 
     bt_send_l2cap( source_cid, (uint8_t*) &timecmd, 50);
+}
+
+- (void) timeout {
+	[SVProgressHUD dismissWithError:@"Connection Failed"];
+	source_cid = 0;
 }
 
 #pragma mark - BTStack manager protocol for discovery
@@ -301,6 +320,7 @@ static int attempts = 0;
 				}	
 				case L2CAP_EVENT_CHANNEL_CLOSED:
 					// TODO: Disconnect Notice
+					[SVProgressHUD dismissWithSuccess:@"Disconnected."];
 					break;
 				case L2CAP_EVENT_CREDITS:
 				{												
@@ -317,6 +337,12 @@ static int attempts = 0;
 					// heartbeat
 					source_cid = READ_BT_16(packet, 13); 
 					con_handle = READ_BT_16(packet, 9);
+					self.timeoutTimer = [NSTimer timerWithTimeInterval:30 
+																target:self 
+															  selector:@selector(timeout:) 
+															  userInfo:nil 
+															   repeats:NO];
+					[SVProgressHUD dismiss];
 					break;
 				}
 				default: {

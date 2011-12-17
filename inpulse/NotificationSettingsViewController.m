@@ -1,11 +1,13 @@
 #import "NotificationSettingsViewController.h"
 #import "INPreferenceManager.h"
 #import "config.h"
+#import <Foundation/NSTask.h>
 
 @implementation NotificationSettingsViewController
 
 @synthesize tableview = _tableview;
 @synthesize preferenceManager = _preferenceManager;
+@synthesize modified = _modified;
 
 - (void)dealloc {
     [_tableview release];
@@ -24,6 +26,18 @@
 	    self.preferenceManager = [[[INPreferenceManager alloc] init] autorelease];
     }
     return self;
+}
+
+- (void) viewWillDisappear:(BOOL)animated {
+	if(self.modified) {
+		UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Restart Springboard" 
+		                                                    message:@"You must restart springboard for changes to take effect." 
+		                                                   delegate:nil 
+		                                          cancelButtonTitle:@"OK" 
+		                                           otherButtonTitles:nil] autorelease];
+	    [alert show];
+		self.modified = NO;
+	}
 }
 
 #pragma mark - UITableView Datasource
@@ -49,9 +63,9 @@
      
 	switch(indexPath.row) {
 		case kTestRowEmail: {	
-            BOOL on = [[self.preferenceManager.preferences objectForKey:@"inpulseEmailEnabled"] boolValue];
+            BOOL on = [[self.preferenceManager.preferences objectForKey:@"inpulsePushEnabled"] boolValue];
             cell.detailTextLabel.text = on ? @"On" : @"Off";
-			cell.textLabel.text = @"Email";
+			cell.textLabel.text = @"Push/Local Notifications";
 			cell.imageView.image = [UIImage imageNamed:@"GMail.png"];
 			break;
 		}
@@ -84,10 +98,11 @@
 #pragma mark - UITableView Delegate methods
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath { 
+	self.modified = YES;
 	switch(indexPath.row) {
 		case kTestRowEmail: {	
-            BOOL on = [[self.preferenceManager.preferences objectForKey:@"inpulseEmailEnabled"] boolValue];
-            [self.preferenceManager.preferences setObject:[NSNumber numberWithBool:!on] forKey:@"inpulseEmailEnabled"];
+            BOOL on = [[self.preferenceManager.preferences objectForKey:@"inpulsePushEnabled"] boolValue];
+            [self.preferenceManager.preferences setObject:[NSNumber numberWithBool:!on] forKey:@"inpulsePushEnabled"];
             [self.preferenceManager save];
             break;
 		}

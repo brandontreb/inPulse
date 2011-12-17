@@ -52,9 +52,9 @@
 			<key>defaults</key>
 			<string>com.brandontreb.inpulsenotifiersettings</string>
 			<key>key</key>
-			<string>inpulseEmailEnabled</string>
+			<string>inpulsePushEnabled</string>
 			<key>label</key>
-			<string>Email</string>
+			<string>Push/Local Notifications</string>
 			<key>postNotification</key>
 			<string>com.brandontreb.inpulsenotifier/reloadPrefs</string>
 		</dict>

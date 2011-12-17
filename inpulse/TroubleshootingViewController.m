@@ -70,7 +70,7 @@ int store_inpulse_string(char *dest, const char *string){
     
 	switch(indexPath.row) {
 		case kTestRowEmail: {	
-			cell.textLabel.text = @"Send Test Email";
+			cell.textLabel.text = @"Send Test Push";
 			cell.imageView.image = [UIImage imageNamed:@"GMail.png"];
 			break;
 		}
@@ -105,7 +105,7 @@ int store_inpulse_string(char *dest, const char *string){
 		case kTestRowEmail: {	
 			NSString *title = @"brandontreb";
 			NSString *message = @"Hey there,\n\nThanks for checking out the inPulse app for iOS.\n-Brandon";
-			[self sendTestMessageOfType:kMessageEmail title:title message:message];			
+			[self sendTestMessageOfType:kMessagePush title:title message:message];			
 			break;
 		}
 		case kTestRowSMS: {	

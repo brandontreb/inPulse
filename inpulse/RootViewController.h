@@ -8,6 +8,7 @@
 @property(nonatomic, retain) UITableView *tableview;
 @property(nonatomic, retain) INPreferenceManager *preferenceManager;
 @property(nonatomic, retain) BTstackManager *bt;
+@property(nonatomic, retain) NSTimer *timeoutTimer;
 @property(nonatomic, assign) BOOL enabled;
 @property(nonatomic, assign) kInPulseTestState state;
 

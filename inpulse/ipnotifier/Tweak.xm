@@ -42,7 +42,7 @@ static PulseMessage* managerMessageFromBulletin(BBBulletin * bulletin){
 		message.messageType=kMessageCalendar;
 	}
 	else{
-		message.messageType=kMessageEmail;
+		message.messageType=kMessagePush;
 	}
 	return message;
 }
