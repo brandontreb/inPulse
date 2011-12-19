@@ -55,11 +55,11 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
                                                                 action:@selector(connect:)] autorelease];
     self.navigationItem.rightBarButtonItem = connect;
 
-	UIBarButtonItem *disconnect = [[[UIBarButtonItem alloc] initWithTitle:@"Disconnect" 
+	/*UIBarButtonItem *disconnect = [[[UIBarButtonItem alloc] initWithTitle:@"Disconnect" 
                                                                  style:UIBarButtonItemStylePlain 
                                                                 target:self 
                                                                 action:@selector(disconnect:)] autorelease];
-    self.navigationItem.leftBarButtonItem = disconnect;
+    self.navigationItem.leftBarButtonItem = disconnect;*/
 
     self.title = @"inPulse";
 }
@@ -177,16 +177,13 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
 	BTstackError err = [self.bt activate];
 	if (err) NSLog(@"activate err 0x%02x!", err);
 	[SVProgressHUD showWithStatus:@"Connecting to inPulse..." maskType:SVProgressHUDMaskTypeClear];
-	self.timeoutTimer = [NSTimer timerWithTimeInterval:30 
-												target:self 
-											  selector:@selector(timeout:) 
-											  userInfo:nil 
-											   repeats:NO];
 }
 
 - (void) disconnect:(id) sender {
-	bt_send_cmd(&l2cap_disconnect,source_cid,0x1001);
-	[SVProgressHUD showWithStatus:@"Disconnecting from inPulse..." maskType:SVProgressHUDMaskTypeClear];
+	if(source_cid) {
+		bt_send_cmd(&l2cap_disconnect,source_cid,0x1001);
+		[SVProgressHUD showWithStatus:@"Disconnecting from inPulse..." maskType:SVProgressHUDMaskTypeClear];
+	}
 }
 
 - (void) setTime {
