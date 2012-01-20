@@ -10,14 +10,6 @@ PulseMessageManager *manager;
 
 -(void)applicationDidFinishLaunching:(id)notification{ 
     %orig;
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Welcome" 
-        message:@"Welcome to your iPhone Brandon!" 
-        delegate:nil 
-        cancelButtonTitle:@"Thanks" 
-        otherButtonTitles:nil];
-    [alert show];
-    [alert release];
-
     manager = [[PulseMessageManager alloc] init];
 }
 

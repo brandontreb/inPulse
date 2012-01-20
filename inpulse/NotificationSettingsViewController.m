@@ -24,6 +24,16 @@
         [self.view addSubview:_tableview];
         self.title = @"Notification Settings";
 	    self.preferenceManager = [[[INPreferenceManager alloc] init] autorelease];
+	
+		if(!self.preferenceManager.preferences || [self.preferenceManager.preferences count] == 0) {
+			UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Preferences not initialized." 
+			                                                    message:@"Please visit the inpulse settings in Settings.app to use this feature." 
+			                                                   delegate:nil 
+			                                          cancelButtonTitle:@"OK" 
+			                                           otherButtonTitles:nil] autorelease];
+		    [alert show];
+		}
+	
     }
     return self;
 }

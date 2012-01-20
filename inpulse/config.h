@@ -1,8 +1,8 @@
 typedef enum {
 	kRowToggleEnabled,
 	kRowSetTime,
-	kRowNotificationSettings,
-	kRowTroubleshooting
+	kRowTroubleshooting,
+	kRowNotificationSettings
 } kInPulseRows;
 
 typedef enum {

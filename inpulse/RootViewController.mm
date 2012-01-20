@@ -71,7 +71,7 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 4;
+    return 3;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -176,6 +176,13 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
 - (void) connect:(id) sender {	
 	BTstackError err = [self.bt activate];
 	if (err) NSLog(@"activate err 0x%02x!", err);
+	
+	self.timeoutTimer = [NSTimer timerWithTimeInterval:5
+												target:self 
+											  selector:@selector(timeout:) 
+											  userInfo:nil 
+											   repeats:NO];
+	
 	[SVProgressHUD showWithStatus:@"Connecting to inPulse..." maskType:SVProgressHUDMaskTypeClear];
 }
 
@@ -189,6 +196,12 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
 - (void) setTime {
 	
 	self.state = kStateSettingTime;	
+
+	self.timeoutTimer = [NSTimer timerWithTimeInterval:10
+												target:self 
+											  selector:@selector(timeout:) 
+											  userInfo:nil 
+											   repeats:NO];
 
 	// If there is no connection, connect first
 	if(!source_cid) {
@@ -221,7 +234,7 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
     bt_send_l2cap( source_cid, (uint8_t*) &timecmd, 50);
 }
 
-- (void) timeout {
+- (void) timeout:(id) sender {
 	[SVProgressHUD dismissWithError:@"Connection Failed"];
 	source_cid = 0;
 }
@@ -299,6 +312,11 @@ static int attempts = 0;
 					if (packet[2] == 0) {							
 						[SVProgressHUD dismissWithSuccess:@"Connection established."];
 						
+						if(self.timeoutTimer) {
+							[self.timeoutTimer invalidate];
+							self.timeoutTimer = nil;
+						}
+						
 						// If we were connecting because of troubleshooting
 						if(self.state == kStateTroubleshootingTappedWhileDisconnected) {
 							self.state = kStateIdle;
@@ -323,6 +341,12 @@ static int attempts = 0;
 				{												
 					// Confirms event
 					if(self.state == kStateSettingTime) {
+						
+						if(self.timeoutTimer) {
+							[self.timeoutTimer invalidate];
+							self.timeoutTimer = nil;
+						}
+						
 						[SVProgressHUD dismissWithSuccess:@"Time Synchronized."];
                         self.state = kStateIdle;
 						break;
@@ -333,13 +357,7 @@ static int attempts = 0;
 				{
 					// heartbeat
 					source_cid = READ_BT_16(packet, 13); 
-					con_handle = READ_BT_16(packet, 9);
-					self.timeoutTimer = [NSTimer timerWithTimeInterval:30 
-																target:self 
-															  selector:@selector(timeout:) 
-															  userInfo:nil 
-															   repeats:NO];
-					[SVProgressHUD dismiss];
+					con_handle = READ_BT_16(packet, 9);					
 					break;
 				}
 				default: {
