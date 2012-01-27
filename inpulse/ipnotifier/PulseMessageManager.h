@@ -12,7 +12,6 @@
 @property(nonatomic, retain) BTstackManager *bt;
 @property(nonatomic, retain) PulseMessage *pendingMessage;
 @property(nonatomic, retain) INPreferenceManager *preferenceManager;
-@property(nonatomic, retain) NSTimer *timeoutTimer;
 
 - (void)newMessageWithMessage:(PulseMessage *)pulseMessage;
 - (void)newMessageWithData:(NSData *)data;

@@ -20,7 +20,6 @@ ABRecordRef ABCFindPersonMatchingPhoneNumber(ABAddressBookRef addressBook, NSStr
 @synthesize bt = _bt;
 @synthesize pendingMessage = _pendingMessage;
 @synthesize preferenceManager = _preferenceManager;
-@synthesize timeoutTimer = _timeoutTimer;
 
 int store_inpulse_string(char *dest, const char *string){
 	int len = strlen(string) + 1;
@@ -105,7 +104,14 @@ int store_inpulse_string(char *dest, const char *string){
 	// Check if btstack is active	
 	if(!source_cid) {
 		self.pendingMessage = pulseMessage;
-		[self.bt activate];
+        if(![self.bt isActive]) {
+		    [self.bt activate];
+        } else {
+            NSString *address = [self.preferenceManager.preferences objectForKey:@"inpulseWatchAddress"];
+            [BTDevice address:&addr fromString:address];	
+            bt_send_cmd(&l2cap_create_channel, addr, 0x1001);
+        }
+
 		return;
 	}
 	
@@ -166,10 +172,6 @@ int store_inpulse_string(char *dest, const char *string){
 	bt_send_l2cap( source_cid, (uint8_t*) &buffer, 255);*/
 }
 
-- (void) timeout {
-	source_cid = 0;
-}
-
 #pragma mark - BTStack manager protocol for discovery
 
 -(void) activatedBTstackManager:(BTstackManager*) manager {
@@ -213,7 +215,7 @@ int store_inpulse_string(char *dest, const char *string){
 					//uint16_t psm = READ_BT_16(packet, 11); 
 					source_cid = READ_BT_16(packet, 13); 
 					con_handle = READ_BT_16(packet, 9);
-					
+	
 					if (packet[2] == 0) {							
 						// TODO: Connection Established
 						if(self.pendingMessage) {
@@ -234,11 +236,9 @@ int store_inpulse_string(char *dest, const char *string){
 					// heartbeat
 					source_cid = READ_BT_16(packet, 13); 
 					con_handle = READ_BT_16(packet, 9);
-					self.timeoutTimer = [NSTimer timerWithTimeInterval:30 
-																target:self 
-															  selector:@selector(timeout:) 
-															  userInfo:nil 
-															   repeats:NO];
+                    if(source_cid > 1000) {
+                        source_cid = 0;   
+                    }
 					break;
 				}
 				default: 					
