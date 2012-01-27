@@ -71,7 +71,7 @@ bd_addr_t addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};	// inPulse
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 3;
+    return 4;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {

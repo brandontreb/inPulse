@@ -44,7 +44,7 @@ static PulseMessage* managerMessageFromBulletin(BBBulletin * bulletin){
 %hook SBBulletinBannerController
 -(void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned)feed{
 	if (![seenBulletinID isEqual:[bulletin bulletinID]]){
-		PulseMessage *message = [managerMessageFromBulletin(bulletin) autorelease];
+		PulseMessage *message = managerMessageFromBulletin(bulletin);
 		[manager newMessageWithMessage:message];
 	}
 	%orig;
@@ -53,8 +53,8 @@ static PulseMessage* managerMessageFromBulletin(BBBulletin * bulletin){
 %hook SBBulletinModalController
 -(void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned)feed{
 	if (![seenBulletinID isEqual:[bulletin bulletinID]]){
-		PulseMessage *message = [managerMessageFromBulletin(bulletin) autorelease];
-		[manager newMessageWithMessage:message]; 
+		PulseMessage *message = managerMessageFromBulletin(bulletin);
+	    [manager newMessageWithMessage:message]; 
 	}
 	%orig;
 }
@@ -62,7 +62,7 @@ static PulseMessage* managerMessageFromBulletin(BBBulletin * bulletin){
 %hook SBAwayBulletinListController
 -(void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned)feed{
 	if (![seenBulletinID isEqual:[bulletin bulletinID]]){
-		PulseMessage *message = [managerMessageFromBulletin(bulletin) autorelease];
+		PulseMessage *message = managerMessageFromBulletin(bulletin);
 		[manager newMessageWithMessage:message];
 	}
 	%orig;
@@ -71,7 +71,7 @@ static PulseMessage* managerMessageFromBulletin(BBBulletin * bulletin){
 %hook SBAlertItemsController
 -(void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned)feed{
 	if (![seenBulletinID isEqual:[bulletin bulletinID]]){
-		PulseMessage *message = [managerMessageFromBulletin(bulletin) autorelease];
+		PulseMessage *message = managerMessageFromBulletin(bulletin);
 		[manager newMessageWithMessage:message];
 	}
 	%orig;
